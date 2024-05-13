@@ -172,6 +172,19 @@ Stored procedure that takes market, fiscal_year and top n as an input and return
 
 ![Screenshot 2024-05-13 at 2 54 53 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/ac8977d1-412b-4144-af94-1ffb147465dd)
 
+### Skills utilised for the Project
+1. Data Modelling and ETL
+2. Joins and Analystics on Tables
+3. Subqueries and co-related Subquery
+4. Common Table Expression(CTE)
+5. Database Normalization and Integrity
+6. Entity Relationship Diagram(ERD)
+7. User Defined SQL Function
+8. Stored Procedures
+9. Database Views
+10. Performance Improvement
+11. Windows Function:OVER, ROW_NUMBER, RANK, DENSE_RANK
+
 
 
 
