@@ -110,6 +110,84 @@ group by c.market;
 
 
 
+####  [4. Top MARKET](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/blob/main/Top%20MARKET.pdf)
+
+
+```
+
+## Retrieve the top 2 markets in every region by their gross sales amount in FY=2021.
+with cte1 as (
+		select
+			c.market,
+			c.region,
+			round(sum(sold_quantity)/1000000,2) as gross_sales_mln
+			from fact_sales_monthly s
+			join dim_customer c
+			on c.customer_code=s.customer_code
+			where fiscal_year=2021
+			group by market,region
+			order by gross_sales_mln desc
+		),
+		cte2 as (
+			select *,
+			dense_rank() over(partition by region order by gross_sales_mln desc) as drnk
+			from cte1
+		)
+	select * from cte2 where drnk<=2;
+```
+
+![Screenshot 2024-05-13 at 3 11 08 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/0d85f74a-5eac-4b4f-b998-35a56afffc92)
+
+
+####  [4. Top PRODUCTS](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/blob/main/Top%20PRODUCTS.pdf)
+
+```
+with cte1 as 
+		(select
+                     p.division,
+                     p.product,
+                     sum(sold_quantity) as total_qty
+                from fact_sales_monthly s
+                join dim_product p
+                      on p.product_code=s.product_code
+                where fiscal_year=2021
+                group by p.product,p.division),
+           cte2 as 
+	        (select 
+                     *,
+                     dense_rank() over (partition by division order by total_qty desc) as drnk
+                from cte1)
+	select * from cte2 where drnk<=3
+```
+![Screenshot 2024-05-13 at 3 08 44 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/00055121-ce79-4666-b6b9-b76b7659edbc)
+
+####  [5. Top CUSTOMERS](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/blob/main/Top%20CUSTOMERS.pdf)
+
+Stored procedure that takes market, fiscal_year and top n as an input and returns top n customers by net sales in that given fiscal year and market
+
+![Screenshot 2024-05-13 at 3 00 13 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/65e393e9-d315-4af3-8367-f017233f8f0f)
+
+
+**Top 5 Customer in market fiscal year 2021**
+
+![Screenshot 2024-05-13 at 2 54 53 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/ac8977d1-412b-4144-af94-1ffb147465dd)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
