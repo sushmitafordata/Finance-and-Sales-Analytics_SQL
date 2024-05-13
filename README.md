@@ -1,93 +1,39 @@
 # Finance-and-Sales-Analytics_SQL
 
-**1. Getting the customer code of Croma India**
-```
-SELECT *
-  FROM dim_customer
-  WHERE customer like "%croma%"
-  AND market="india";
-```
-  Query Result:
+- AtliQ is a fast-growing hardware company that sells various products to customers in many countries through various channels, including retail, direct sales, and distributor networks, both online and in brick-and-mortar stores.
+-  To understand the business and boost sales of the company, AtliQ needs clear insights into it's data to make informed decision-making strategies.
+-  This project involves anlysing over 1.5 million sales records in SQL
+
+## Client Requirements
+Generate a report of individual product sales(aggregated on a monthly basis at the product level) for Amazon India customers for FY=2021 so that I track individual individual product sales.
+
+### Financial Report
+
+1. Month
+
+2. Product Name & Variants
+
+3. Sold Quantity
+
+4. Gross Price per Item
+
+5. Gross Price Total
+
+### Sales Report
+
+1. Top Markets
+
+2. Top Product
+
+3. Top Customers
+
+**Here, I have provided the link to the document containing a detailed step-by-step analysis that led to meeting the requirements, along with a snapshot for reference.**
+
+### Generated Reports
+
+#### [1. Gross Sales Report : MONTHLY PRODUCT TRANSACTIONS](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/blob/main/Gross%20Sales%20Report-Monthly%20Product%20Transactions.pdf)
 
 
-![Screenshot 2024-05-12 at 10 40 26 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/d963790d-030c-4dde-96d6-d2e244f8444f)
-
-
-
-
-**2. Getting all the sales transaction data from fact_sales_monthly table for (croma: 90002002) in the fiscal_year 2021**
-
-
-```
-
-SELECT * FROM fact_sales_monthly 
-	WHERE 
-            customer_code=90002002 AND
-            YEAR(DATE_ADD(date, INTERVAL 4 MONTH))=2021 
-	ORDER BY date asc
-	LIMIT 100000;
-
-```
-  Query Result:
-
-
-
-![Screenshot 2024-05-12 at 10 41 20 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/d41e0fe6-645e-4f1f-bbcb-170f89abae4d)
-
-**3. Create a function 'get_fiscal_year' to get fiscal year by passing the date**
-
-```
-	CREATE FUNCTION `get_fiscal_year`(calendar_date DATE) 
-	RETURNS int
-    	DETERMINISTIC
-	BEGIN
-        	DECLARE fiscal_year INT;
-        	SET fiscal_year = YEAR(DATE_ADD(calendar_date, INTERVAL 4 MONTH));
-        	RETURN fiscal_year;
-	END
-```
-
-Query Result:
-
-![Screenshot 2024-05-12 at 10 51 11 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/bcdcea6b-dd14-42a0-b812-e32cf6711955)
-
- **4. Implementing the function created in the previous step**
-
- ```
-	SELECT * FROM fact_sales_monthly 
-	WHERE 
-            customer_code=90002002 AND
-            get_fiscal_year(date)=2021 
-	ORDER BY date asc
-	LIMIT 100000;
-```
-Query Result:
-
-![Screenshot 2024-05-12 at 10 54 10 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/5f53c57b-e90f-4a19-9b91-d19235e1e246)
-
-
-
-### GROSS SALES REPORT :Monthly Product Transactions
-
-**5. Performing joins to pull product information**
-
-```
-SELECT s.date, s.product_code, p.product, p.variant, s.sold_quantity 
-	FROM fact_sales_monthly s
-	JOIN dim_product p
-        ON s.product_code=p.product_code
-	WHERE 
-            customer_code=90002002 AND 
-    	    get_fiscal_year(date)=2021     
-	LIMIT 1000000;
-```
-  Query Result:
-
-
-![Screenshot 2024-05-12 at 11 34 36 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/c5b4ac32-0962-4f4c-ab1e-5a4321d70f01)
-
-
-**6. Performing join with 'fact_gross_price' table with the above query and generating required fields**
 
 ```
 SELECT 
@@ -115,115 +61,64 @@ Query Result:
 ![Screenshot 2024-05-12 at 11 41 02 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/e8bd314d-9d87-44e8-b82b-36a806e18358)
 
 
-### GROSS SALES REPORT :Total Sales Amount
+#### [2.Gross Sales Report:TOTAL SALES AMOUNT](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/blob/main/Gross%20Sales%20Report-TOTAL%20SALES%20AMOUNT.pdf)
 
-**7. Generate monthly gross sales report for Croma India for all the years**
-```
-
-	SELECT 
-            s.date, 
-    	    SUM(ROUND(s.sold_quantity*g.gross_price,2)) as monthly_sales
-	FROM fact_sales_monthly s
-	JOIN fact_gross_price g
-        ON g.fiscal_year=get_fiscal_year(s.date) AND g.product_code=s.product_code
-	WHERE 
-             customer_code=90002002
-	GROUP BY date;
-```
-Query Result:
-
-![Screenshot 2024-05-12 at 11 43 24 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/372ad19b-c14d-4ff3-af84-7bcc90c09dd6)
-
-#### Monthly Gross Sales Report
-
-**8. Generate monthly gross sales report for any customer using stored procedure**
 
 ```
-	CREATE PROCEDURE `get_monthly_gross_sales_for_customer`(
-        	in_customer_codes TEXT
-	)
-	BEGIN
-        	SELECT 
-                    s.date, 
-                    SUM(ROUND(s.sold_quantity*g.gross_price,2)) as monthly_sales
-        	FROM fact_sales_monthly s
-        	JOIN fact_gross_price g
-               	    ON g.fiscal_year=get_fiscal_year(s.date)
-                    AND g.product_code=s.product_code
-        	WHERE 
-                    FIND_IN_SET(s.customer_code, in_customer_codes) > 0
-        	GROUP BY s.date
-        	ORDER BY s.date DESC;
-	END;
+select c.market,sum(sold_quantity) as sold_amount
+from fact_sales_monthly s
+join dim_customer c
+on s.customer_code = c.customer_code
+where get_fiscal_year(s.date)=2021 and c.market="India"
+group by c.market;
 ```
+![Screenshot 2024-05-13 at 12 19 45 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/e5d25462-e283-4c9f-b25f-9f2697cacf12)
 
-Query Result:
+####  [3. Pre Invoice & Post Invoice Amount with MONTHLY NET SALES](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/blob/main/Monthly%20Gross%20Sales%20Report.pdf)
+
+**Generated by implementing Views**
+
+**Pre Invoice**
 
 
-![Screenshot 2024-05-12 at 11 48 21 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/f6fc23a5-45c9-4339-8db9-102b906b6377)
-
-**9. Including pre-invoice deduction information for different customers**
-
-```
-SELECT 
-    	   s.date, 
-           s.product_code, 
-           p.product, 
-	   p.variant, 
-           s.sold_quantity, 
-           g.gross_price as gross_price_per_item,
-           ROUND(s.sold_quantity*g.gross_price,2) as gross_price_total,
-           pre.pre_invoice_discount_pct
-	FROM fact_sales_monthly s
-	JOIN dim_product p
-            ON s.product_code=p.product_code
-	JOIN fact_gross_price g
-    	    ON g.fiscal_year=s.fiscal_year
-    	    AND g.product_code=s.product_code
-	JOIN fact_pre_invoice_deductions as pre
-            ON pre.customer_code = s.customer_code AND 
-            pre.fiscal_year=s.fiscal_year	
-	WHERE  
-    	    s.fiscal_year=2021     
-	LIMIT 1000000;
-```
-Query Result:
+![Screenshot 2024-05-13 at 1 15 10 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/2acb1513-66ba-4583-87c3-e339a67769cd)
 
 
 
-![Screenshot 2024-05-13 at 12 07 15 AM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/cff4d1b8-8a97-4970-83b2-80b4cc46d9ea)
-
-**10. Calculating net_invoice_sales amount using the CTE's**
-```
-	WITH cte1 AS (
-		SELECT 
-    		    s.date, 
-    		    s.customer_code,
-    		    s.product_code, 
-                    p.product, p.variant, 
-                    s.sold_quantity, 
-                    g.gross_price as gross_price_per_item,
-                    ROUND(s.sold_quantity*g.gross_price,2) as gross_price_total,
-                    pre.pre_invoice_discount_pct
-		FROM fact_sales_monthly s
-		JOIN dim_product p
-        		ON s.product_code=p.product_code
-		JOIN fact_gross_price g
-    			ON g.fiscal_year=s.fiscal_year
-    			AND g.product_code=s.product_code
-		JOIN fact_pre_invoice_deductions as pre
-        		ON pre.customer_code = s.customer_code AND
-    			pre.fiscal_year=s.fiscal_year
-		WHERE 
-    			s.fiscal_year=2021) 
-	SELECT 
-      	    *, 
-    	    (gross_price_total-pre_invoice_discount_pct*gross_price_total) as net_invoice_sales
-	FROM cte1
-	LIMIT 1500000;
-```
-Query Result:
 
 
-![Screenshot 2024-05-13 at 12 15 26 AM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/c3938655-45bd-447a-8251-e55545d19aa1)
+**Post-Invoice**
+
+
+![Screenshot 2024-05-13 at 1 16 55 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/4fa3fa39-7dd6-4095-885e-6e35ab5fc096)
+
+
+
+**Final Insight**
+
+	SELECT
+ 
+            *, 
+	    
+    	    net_invoice_sales*(1-post_invoice_discount_pct) as net_sales
+	 
+	FROM gdb0041.sales_postinv_discount;
+
+
+ 
+![Screenshot 2024-05-13 at 1 19 35 PM](https://github.com/sushmitafordata/Finance-and-Sales-Analytics_SQL/assets/135410984/e00a2778-45d4-413a-b8c5-f75309a06493)
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
 
